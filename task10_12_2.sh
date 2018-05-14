@@ -6,26 +6,29 @@ cd $d
 #дополнительно
 . "$d/config"
 
-
+#директории
 mkdir $d/certs
 mkdir $d/etc
 
-
-
-#install docker-ce
+#установка docker-ce
 curl -fsSl https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-add-apt-repository \
-  'deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable'
-apt-get update
-apt-get install docker-ce -y 
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+apt-get -yqq update
+apt-get -yqq install docker-ce 
+apt-get -yqq  install docker-compose
 
+#загрузка образов
+docker pull $NGINX_IMAGE
+docker pull $APACHE_IMAGE
 
-#generate certs
+#генерация certs
 openssl genrsa -out $d/certs/root-ca.key 2048
 openssl req -x509 -new \
-        -key $d/certs/root-ca.key \ 
-        -days 365 \
+        -key $d/certs/root-ca.key \
+        -days 365\
         -out $d/certs/root-ca.crt \
         -subj '/C=UA/ST=Kharkiv/L=Kharkiv/O=Mirantis/OU=NURE/CN=rootCA'
 
@@ -34,11 +37,11 @@ openssl req -new \
         -key $d/certs/web.key \
         -nodes \
         -out $d/certs/web.csr \
-         -subj "/C=UA/ST=Kharkiv/L=Kharkiv/O=Mirantis/OU=NURE/CN=$(hostname)"
+        -subj "/C=UA/ST=Kharkiv/L=Kharkiv/O=Mirantis/OU=NURE/CN=$(hostname)"
 
 
-opensll x509 -req -extfile <(printf "subjectAltName=IP:$EXTERNAL_IP,DNS:$HOST_NAME") \
-             -days 365 in $d/certs/web.csr \
+openssl x509 -req -extfile <(printf "subjectAltName=IP:$EXTERNAL_IP,DNS:$HOST_NAME")\
+             -days 365 -in $d/certs/web.csr \
              -CA $d/certs/root-ca.crt \
              -CAkey $d/certs/root-ca.key \
              -CAcreateserial -out $d/certs/web.crt
