@@ -25,11 +25,11 @@ docker pull $NGINX_IMAGE
 docker pull $APACHE_IMAGE
 
 #генерация certs
-openssl genrsa -out $d/certs/root-ca.key 2048
+openssl genrsa -out $d/certs/root.key 2048
 openssl req -x509 -new \
-        -key $d/certs/root-ca.key \
+        -key $d/certs/root.key \
         -days 365\
-        -out $d/certs/root-ca.crt \
+        -out $d/certs/root.crt \
         -subj '/C=UA/ST=Kharkiv/L=Kharkiv/O=Mirantis/OU=NURE/CN=rootCA'
 
 openssl genrsa -out $d/certs/web.key 2048
@@ -40,47 +40,16 @@ openssl req -new \
         -subj "/C=UA/ST=Kharkiv/L=Kharkiv/O=Mirantis/OU=NURE/CN=$(hostname)"
 
 
-openssl x509 -req -extfile <(printf "subjectAltName=IP:$EXTERNAL_IP,DNS:$HOST_NAME")\
+openssl x509 -req -extfile <(printf "subjectAltName=IP:${EXTERNAL_IP},DNS:${HOST_NAME}")\
              -days 365 -in $d/certs/web.csr \
-             -CA $d/certs/root-ca.crt \
-             -CAkey $d/certs/root-ca.key \
+             -CA $d/certs/root.crt \
+             -CAkey $d/certs/root.key \
              -CAcreateserial -out $d/certs/web.crt
 
-cat $d/certs/web.crt $d/certs/root-ca.crt > $d/certs/web-full.crt
+#cat $d/certs/web.crt $d/certs/root-ca.crt > $d/certs/web-full.crt
 
 # конфиг nginx
-echo " user  nginx;
-worker_processes  1;
-
-error_log  $NGINX_LOG_DIR/error.log warn;
-pid        /var/run/nginx.pid;
-
-
-events {
-    worker_connections  1024;
-}
-
-
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
-
-    access_log  $NGINX_LOG_DIR/access.log  main;
-
-    sendfile        on;
-    #tcp_nopush     on;
-
-    keepalive_timeout  65;
-
-    #gzip  on;
-
-    include /etc/nginx/conf.d/*.conf;
-
-   server {
+echo "server {
             listen 443
             root /etc/nginx/sites-enabled
             ssl on;
@@ -99,9 +68,13 @@ services:
     nginx:
       image: $NGINX_IMAGE
       volumes:
-        - /home/ubuntu/task10_12_2/etc:/etc/nginx/cond.d
+        - /home/ubuntu/task10_12_2/etc:/etc/nginx/conf.d
         - /home/ubuntu/task10_12_2/certs:/etc/ssl/certs
+        - $NGINX_LOG_DIR:/var/log/nginx
       ports:
           - $NGINX_PORT:443
     apache:
       image: $APACHE_IMAGE" > $d/docker-compose.yml
+
+cd $d
+#docker-compose up -d
