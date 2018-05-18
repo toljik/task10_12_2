@@ -46,12 +46,11 @@ openssl x509 -req -extfile <(printf "subjectAltName=IP:${EXTERNAL_IP},DNS:${HOST
              -CAkey $d/certs/root.key \
              -CAcreateserial -out $d/certs/web.crt
 
-#cat $d/certs/web.crt $d/certs/root-ca.crt > $d/certs/web-full.crt
+cat $d/certs/web.crt $d/certs/root.crt > $d/certs/web-full.crt
 
 # конфиг nginx
 echo "server {
-            listen 443
-            root /etc/nginx/sites-enabled
+            listen 443;
             ssl on;
             ssl_certificate /etc/ssl/certs/web-full.crt;
             ssl_certificate_key /etc/ssl/web.key;
@@ -59,9 +58,9 @@ echo "server {
            location / {
            proxy_pass http://apache
          }
+ } " > $d/etc/nginx.conf
 
-  } " > $d/etc/nginx.conf
-
+mkdir -p $NGINX_LOG_DIR
 
 echo "version: '2'
 services:
@@ -77,4 +76,4 @@ services:
       image: $APACHE_IMAGE" > $d/docker-compose.yml
 
 cd $d
-#docker-compose up -d
+docker-compose up -d
