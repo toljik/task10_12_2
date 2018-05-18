@@ -1,7 +1,8 @@
 #!/bin/bash
 
-d=`dirname $0`
-cd $d
+cd $(dirname $0)
+d=`pwd`
+echo $d
 
 #дополнительно
 . "$d/config"
@@ -67,8 +68,8 @@ services:
     nginx:
       image: $NGINX_IMAGE
       volumes:
-        - /home/ubuntu/task10_12_2/etc:/etc/nginx/conf.d
-        - /home/ubuntu/task10_12_2/certs:/etc/ssl/certs
+        - $d/etc:/etc/nginx/conf.d
+        - $d/certs:/etc/ssl/certs
         - $NGINX_LOG_DIR:/var/log/nginx
       ports:
           - $NGINX_PORT:443
