@@ -2,7 +2,6 @@
 
 cd $(dirname $0)
 d=`pwd`
-echo $d
 
 #дополнительно
 . "$d/config"
@@ -57,7 +56,7 @@ echo "server {
             ssl_certificate_key /etc/ssl/certs/web.key;
 
            location / {
-           proxy_pass http://apache
+           proxy_pass http://apache;
          }
  } " > $d/etc/nginx.conf
 
