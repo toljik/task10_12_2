@@ -53,7 +53,7 @@ echo "server {
             listen 443;
             ssl on;
             ssl_certificate /etc/ssl/certs/web-full.crt;
-            ssl_certificate_key /etc/ssl/web.key;
+            ssl_certificate_key /etc/ssl/certs/web.key;
 
            location / {
            proxy_pass http://apache
