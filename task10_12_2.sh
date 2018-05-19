@@ -11,6 +11,8 @@ mkdir $d/certs
 mkdir $d/etc
 
 #установка docker-ce
+apt-get -yqq update
+apt-get -yqq install curl 
 curl -fsSl https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 sudo add-apt-repository \
    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
